@@ -5,7 +5,7 @@ LABEL updater="Elio Severo Junior <elioseverojunior@gmail.com>"
 
 ENV SONAR_SCANNER_MSBUILD_VERSION=4.3.1.1372 \
     SONAR_SCANNER_VERSION=3.2.0.1227 \
-    DOTNET_SDK_VERSION=2.2 \
+    DOTNET_SDK_VERSION=3.0 \
     SONAR_SCANNER_MSBUILD_HOME=/opt/sonar-scanner-msbuild \
     DOTNET_HOME=/root/.dotnet \
     DOTNET_PROJECT_DIR=/project \
@@ -39,10 +39,14 @@ RUN set -x \
     -y \
   && curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg \
   && mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg \
-  && sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/debian/9/prod stretch main" > /etc/apt/sources.list.d/microsoft-prod.list' \
-  && apt-get update \
-  && apt-get install dotnet-sdk-$DOTNET_SDK_VERSION -y \
-  && apt-get clean \
+  && sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/debian/9/prod stretch main" > /etc/apt/sources.list.d/microsoft-prod.list'
+RUN apt-get update \
+  && apt-get install dotnet-sdk-$DOTNET_SDK_VERSION -y
+
+RUN apt-get update \
+  && apt-get install dotnet-sdk-2.2 -y
+
+RUN apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
 RUN wget -q https://github.com/SonarSource/sonar-scanner-msbuild/releases/download/$SONAR_SCANNER_MSBUILD_VERSION/sonar-scanner-msbuild-$SONAR_SCANNER_MSBUILD_VERSION-net46.zip -O /opt/sonar-scanner-msbuild.zip \
@@ -57,7 +61,7 @@ RUN wget -q https://github.com/SonarSource/sonar-scanner-msbuild/releases/downlo
 ENV PATH="$SONAR_SCANNER_MSBUILD_HOME:$SONAR_SCANNER_MSBUILD_HOME/sonar-scanner-$SONAR_SCANNER_VERSION/bin:${DOTNET_HOME}:${DOTNET_HOME}/tools:${PATH}"
 
 RUN dotnet tool install --global dotnet-sonarscanner
-RUN dotnet tool install --global GitVersion.Tool --version 5.0.1
+RUN dotnet tool install --global GitVersion.Tool
 
 RUN apt-get clean \
   && rm -rf /var/lib/apt/lists/*
